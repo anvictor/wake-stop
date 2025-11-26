@@ -1,3 +1,4 @@
+// DestinationInput.test.tsx
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { DestinationInput } from "./DestinationInput";
 import { describe, it, expect, vi, beforeEach } from "vitest";

@@ -1,3 +1,4 @@
+// Index.tsx
 import { Navigation } from "lucide-react";
 import { LocationTracker } from "@/components/LocationTracker";
 import { DestinationInput } from "@/components/DestinationInput";

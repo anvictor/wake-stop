@@ -1,3 +1,4 @@
+// AlarmSettings.tsx
 import { useState } from "react";
 import { Clock, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";

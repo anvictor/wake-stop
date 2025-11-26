@@ -1,3 +1,4 @@
+// LocationTracker.tsx
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 

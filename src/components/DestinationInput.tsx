@@ -1,3 +1,4 @@
+// DestinationInput.tsx
 import { useState, useEffect, useRef } from "react";
 import { MapPin, Search, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";

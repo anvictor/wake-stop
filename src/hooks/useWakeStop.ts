@@ -1,3 +1,4 @@
+// useWakeStop.ts
 import { useState, useCallback } from "react";
 import { calculateDistance, estimateTime } from "@/utils/distanceCalculator";
 import { playAlarmSound } from "@/utils/alarmSound";

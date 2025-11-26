@@ -1,3 +1,4 @@
+// alarmSound.ts
 let audioContext: AudioContext | null = null;
 let isPlaying = false;
 

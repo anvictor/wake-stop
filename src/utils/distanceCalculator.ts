@@ -1,3 +1,4 @@
+// distanceCalculator.ts
 // Calculate distance between two coordinates using Haversine formula
 export const calculateDistance = (
   lat1: number,
