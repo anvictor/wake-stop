@@ -4,20 +4,29 @@ import { calculateDistance, estimateTime } from "@/utils/distanceCalculator";
 import { playAlarmSound } from "@/utils/alarmSound";
 import { toast } from "sonner";
 
+// Minimum possible interval between API requests (30 seconds)
+const MIN_INTERVAL = 30; // seconds
+
 export const useWakeStop = () => {
-  const [currentLocation, setCurrentLocation] = useState<{
-    lat: number;
-    lng: number;
-  } | null>(null);
-  const [destination, setDestination] = useState<{
-    lat: number;
-    lng: number;
-    name: string;
-  } | null>(null);
+  const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [destination, setDestination] = useState<{ lat: number; lng: number; name: string } | null>(null);
   const [isTracking, setIsTracking] = useState(false);
+
+  // User-defined alert time (minutes before arrival to trigger alarm)
   const [alertTime, setAlertTime] = useState(10);
+
+  // Geographical distance in km (kept for frontend display)
   const [currentDistance, setCurrentDistance] = useState(0);
+
+  // Estimated time in minutes (legacy value, kept for compatibility)
   const [estimatedTimeMinutes, setEstimatedTimeMinutes] = useState(0);
+
+  // New: current time distance to destination (minutes)
+  const [currentTimeDistance, setCurrentTimeDistance] = useState(0);
+
+  // New: interval between API requests (seconds)
+  const [intervalAPI, setIntervalAPI] = useState(alertTime * 60);
+
   const [lastCheckTime, setLastCheckTime] = useState(0);
   const [hasAlerted, setHasAlerted] = useState(false);
 
@@ -31,32 +40,43 @@ export const useWakeStop = () => {
 
       if (destination && isTracking) {
         const now = Date.now();
-        // Check every 5 minutes (300000 ms) or on first update
-        if (now - lastCheckTime >= 300000 || lastCheckTime === 0) {
+
+        // Check only if enough time passed since last API call
+        if (now - lastCheckTime >= intervalAPI * 1000 || lastCheckTime === 0) {
           const distance = calculateDistance(
             newLocation.lat,
             newLocation.lng,
             destination.lat,
             destination.lng
           );
-          const time = estimateTime(distance);
+          const time = estimateTime(distance); // result in minutes
 
-          setCurrentDistance(distance);
-          setEstimatedTimeMinutes(time);
+          // Update both distance and time
+          setCurrentDistance(distance); // km for frontend
+          setEstimatedTimeMinutes(time); // legacy
+          setCurrentTimeDistance(time); // minutes for alarm logic
           setLastCheckTime(now);
 
-          // Trigger alarm if estimated time is less than or equal to alert time
+          // 1. Alarm logic: trigger when current time distance <= alertTime
           if (time <= alertTime && !hasAlerted) {
             playAlarmSound();
             setHasAlerted(true);
-            toast.success("Wake up! You're approaching your stop!", {
-              duration: 10000,
-            });
+            toast.success("Wake up! You're approaching your stop!", { duration: 10000 });
+          }
+
+          // 2. Adaptive intervalAPI logic
+          if (time > 3 * alertTime) {
+            // Far from destination → interval = currentTimeDistance / 3 (converted to seconds)
+            setIntervalAPI(Math.floor((time / 3) * 60));
+          } else {
+            // Closer to destination → reduce interval by factor of 3, but not below MIN_INTERVAL
+            const newInterval = Math.max(Math.floor(intervalAPI / 3), MIN_INTERVAL);
+            setIntervalAPI(newInterval);
           }
         }
       }
     },
-    [destination, isTracking, lastCheckTime, alertTime, hasAlerted]
+    [destination, isTracking, lastCheckTime, intervalAPI, alertTime, hasAlerted]
   );
 
   const handleDestinationSet = (lat: number, lng: number, name: string) => {
@@ -79,7 +99,7 @@ export const useWakeStop = () => {
     setHasAlerted(false);
     setLastCheckTime(0);
 
-    // Calculate initial distance
+    // Initial distance calculation
     const distance = calculateDistance(
       currentLocation.lat,
       currentLocation.lng,
@@ -87,13 +107,16 @@ export const useWakeStop = () => {
       destination.lng
     );
     const time = estimateTime(distance);
-    setCurrentDistance(distance);
-    setEstimatedTimeMinutes(time);
+    setCurrentDistance(distance); // km
+    setEstimatedTimeMinutes(time); // minutes
+    setCurrentTimeDistance(time); // minutes
 
-    toast.success(
-      `Tracking started! You'll be alerted ${minutes} minutes before arrival.`,
-      { duration: 5000 }
-    );
+    // Initial interval = alertTime (converted to seconds)
+    setIntervalAPI(minutes * 60);
+
+    toast.success(`Tracking started! You'll be alerted ${minutes} minutes before arrival.`, {
+      duration: 5000,
+    });
   };
 
   const handleStopTracking = () => {
@@ -107,8 +130,10 @@ export const useWakeStop = () => {
     destination,
     isTracking,
     alertTime,
-    currentDistance,
-    estimatedTimeMinutes,
+    currentDistance,          // km for frontend
+    estimatedTimeMinutes,     // legacy minutes
+    currentTimeDistance,      // new: minutes for alarm logic
+    intervalAPI,              // new: adaptive API interval
     handleLocationUpdate,
     handleDestinationSet,
     handleAlarmSet,

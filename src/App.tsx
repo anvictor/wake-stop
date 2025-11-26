@@ -16,7 +16,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
+      <BrowserRouter future={{ v7_relativeSplatPath: true }}>
         <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading...</div>}>
           <Routes>
             <Route path="/" element={<Index />} />

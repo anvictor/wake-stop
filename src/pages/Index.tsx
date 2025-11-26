@@ -1,5 +1,5 @@
 // Index.tsx
-import { Navigation } from "lucide-react";
+import { Navigation as NavigationSign } from "lucide-react";
 import { LocationTracker } from "@/components/LocationTracker";
 import { DestinationInput } from "@/components/DestinationInput";
 import { AlarmSettings } from "@/components/AlarmSettings";
@@ -8,7 +8,6 @@ import { useWakeStop } from "@/hooks/useWakeStop";
 
 const Index = () => {
   const {
-    currentLocation,
     destination,
     isTracking,
     alertTime,
@@ -32,7 +31,7 @@ const Index = () => {
         <div className="max-w-lg mx-auto">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
-              <Navigation className="h-6 w-6" />
+              <NavigationSign className="h-6 w-6" />
             </div>
             <h1 className="text-3xl font-bold">WakeStop</h1>
           </div>
@@ -42,27 +41,15 @@ const Index = () => {
 
       {/* Main Content */}
       <div className="max-w-lg mx-auto p-4 space-y-4 mt-4">
-        {/* Current Location Card */}
-        {currentLocation && (
-          <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg shadow-sm border border-border animate-slide-up">
-            <div className="flex items-center gap-2 text-sm">
-              <div className="w-2 h-2 bg-primary rounded-full animate-pulse-slow" />
-              <span className="text-muted-foreground">Current Location:</span>
-              <span className="font-mono text-xs">
-                {currentLocation.lat.toFixed(4)},{" "}
-                {currentLocation.lng.toFixed(4)}
-              </span>
-            </div>
-          </div>
-        )}
+       
 
         {/* Destination Input */}
-        <div className="animate-slide-up" style={{ animationDelay: "0.1s" }}>
+        {!isTracking && <div className="animate-slide-up" style={{ animationDelay: "0.1s" }}>
           <DestinationInput onDestinationSet={handleDestinationSet} />
-        </div>
+        </div>}
 
         {/* Alarm Settings */}
-        {destination && (
+        {destination && !isTracking && (
           <div className="animate-slide-up" style={{ animationDelay: "0.2s" }}>
             <AlarmSettings
               onAlarmSet={handleAlarmSet}

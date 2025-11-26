@@ -49,10 +49,10 @@ export const TrackingStatus = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-3 gap-4">
           <div className="space-y-1">
             <p className={`text-sm ${isAlertTime ? "text-white/80" : "text-muted-foreground"}`}>
-              Distance
+              Distance Less then
             </p>
             <p className={`text-2xl font-bold ${isAlertTime ? "text-white" : "text-foreground"}`}>
               {currentDistance.toFixed(1)} km
@@ -60,10 +60,18 @@ export const TrackingStatus = ({
           </div>
           <div className="space-y-1">
             <p className={`text-sm ${isAlertTime ? "text-white/80" : "text-muted-foreground"}`}>
-              Est. Time
+              Est. Time Less then
             </p>
             <p className={`text-2xl font-bold ${isAlertTime ? "text-white" : "text-foreground"}`}>
               {estimatedTime} min
+            </p>
+          </div>
+            <div className="space-y-1">
+            <p className={`text-sm ${isAlertTime ? "text-white/80" : "text-muted-foreground"}`}>
+              Alert. Time
+            </p>
+            <p className={`text-2xl font-bold ${isAlertTime ? "text-white" : "text-foreground"}`}>
+              {alertTime} min
             </p>
           </div>
         </div>
