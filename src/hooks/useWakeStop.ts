@@ -7,6 +7,9 @@ import { toast } from "sonner";
 // Minimum possible interval between API requests (30 seconds)
 const MIN_INTERVAL = 30; // seconds
 
+// EMA smoothing factor for speed calculation
+const SPEED_ALPHA = 0.5;
+
 export const useWakeStop = () => {
   const [currentLocation, setCurrentLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [destination, setDestination] = useState<{ lat: number; lng: number; name: string } | null>(null);
@@ -15,7 +18,7 @@ export const useWakeStop = () => {
   // User-defined alert time (minutes before arrival to trigger alarm)
   const [alertTime, setAlertTime] = useState(10);
 
-  // Geographical distance in km (kept for frontend display)
+  // Geographical distance in km (for frontend display)
   const [currentDistance, setCurrentDistance] = useState(0);
 
   // Estimated time in minutes (legacy value, kept for compatibility)
@@ -23,6 +26,9 @@ export const useWakeStop = () => {
 
   // New: current time distance to destination (minutes)
   const [currentTimeDistance, setCurrentTimeDistance] = useState(0);
+
+  // New: effective speed (km/min) using EMA
+  const [effectiveSpeed, setEffectiveSpeed] = useState<number | null>(null);
 
   // New: interval between API requests (seconds)
   const [intervalAPI, setIntervalAPI] = useState(alertTime * 60);
@@ -48,26 +54,39 @@ export const useWakeStop = () => {
             newLocation.lng,
             destination.lat,
             destination.lng
-          );
-          const time = estimateTime(distance); // result in minutes
+          ); // km
+          const time = estimateTime(distance); // minutes (basic estimate)
 
-          // Update both distance and time
-          setCurrentDistance(distance); // km for frontend
-          setEstimatedTimeMinutes(time); // legacy
-          setCurrentTimeDistance(time); // minutes for alarm logic
+          // Update geographical distance
+          setCurrentDistance(distance);
+          setEstimatedTimeMinutes(time);
+
+          // Update effective speed using EMA
+          const instantSpeed = distance / time; // km/min (rough)
+          const newSpeed =
+            effectiveSpeed === null
+              ? instantSpeed
+              : SPEED_ALPHA * instantSpeed + (1 - SPEED_ALPHA) * effectiveSpeed;
+          setEffectiveSpeed(newSpeed);
+
+          // Calculate current time distance using effective speed
+          const timeDistance =
+            newSpeed > 0 ? distance / newSpeed : time;
+          setCurrentTimeDistance(timeDistance);
+
           setLastCheckTime(now);
 
           // 1. Alarm logic: trigger when current time distance <= alertTime
-          if (time <= alertTime && !hasAlerted) {
+          if (timeDistance <= alertTime && !hasAlerted) {
             playAlarmSound();
             setHasAlerted(true);
             toast.success("Wake up! You're approaching your stop!", { duration: 10000 });
           }
 
           // 2. Adaptive intervalAPI logic
-          if (time > 3 * alertTime) {
+          if (timeDistance > 3 * alertTime) {
             // Far from destination → interval = currentTimeDistance / 3 (converted to seconds)
-            setIntervalAPI(Math.floor((time / 3) * 60));
+            setIntervalAPI(Math.floor((timeDistance / 3) * 60));
           } else {
             // Closer to destination → reduce interval by factor of 3, but not below MIN_INTERVAL
             const newInterval = Math.max(Math.floor(intervalAPI / 3), MIN_INTERVAL);
@@ -76,7 +95,7 @@ export const useWakeStop = () => {
         }
       }
     },
-    [destination, isTracking, lastCheckTime, intervalAPI, alertTime, hasAlerted]
+    [destination, isTracking, lastCheckTime, intervalAPI, alertTime, hasAlerted, effectiveSpeed]
   );
 
   const handleDestinationSet = (lat: number, lng: number, name: string) => {
@@ -133,6 +152,7 @@ export const useWakeStop = () => {
     currentDistance,          // km for frontend
     estimatedTimeMinutes,     // legacy minutes
     currentTimeDistance,      // new: minutes for alarm logic
+    effectiveSpeed,           // new: km/min adaptive speed
     intervalAPI,              // new: adaptive API interval
     handleLocationUpdate,
     handleDestinationSet,
