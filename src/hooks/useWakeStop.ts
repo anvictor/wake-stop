@@ -76,12 +76,18 @@ export const useWakeStop = () => {
 
           setLastCheckTime(now);
 
-          // 1. Alarm logic: trigger when current time distance <= alertTime
-          if (timeDistance <= alertTime && !hasAlerted) {
-            playAlarmSound();
-            setHasAlerted(true);
-            toast.success("Wake up! You're approaching your stop!", { duration: 10000 });
-          }
+         // Alarm logic: trigger only if movement has started
+if (
+  timeDistance <= alertTime &&       // condition: ETA <= alertTime
+  !hasAlerted &&                     // condition: alarm not already triggered
+  effectiveSpeed !== null &&         // condition: we have a speed estimate
+  effectiveSpeed > 0.1               // condition: movement started (>0.1 km/min)
+) {
+  playAlarmSound();
+  setHasAlerted(true);
+  toast.success("Wake up! You're approaching your stop!", { duration: 10000 });
+}
+
 
           // 2. Adaptive intervalAPI logic
           if (timeDistance > 3 * alertTime) {
