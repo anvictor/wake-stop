@@ -10,6 +10,7 @@ interface TrackingStatusProps {
   currentDistance: number;
   estimatedTime: number;
   alertTime: number;
+  speed: number;
   onStopTracking: () => void;
 }
 
@@ -19,6 +20,7 @@ export const TrackingStatus = ({
   currentDistance,
   estimatedTime,
   alertTime,
+  speed,
   onStopTracking,
 }: TrackingStatusProps) => {
   if (!isTracking || !destination) return null;
@@ -49,7 +51,7 @@ export const TrackingStatus = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="space-y-1">
             <p className={`text-sm ${isAlertTime ? "text-white/80" : "text-muted-foreground"}`}>
               Distance Less then
@@ -63,7 +65,15 @@ export const TrackingStatus = ({
               Est. Time Less then
             </p>
             <p className={`text-2xl font-bold ${isAlertTime ? "text-white" : "text-foreground"}`}>
-              {estimatedTime} min
+              {estimatedTime.toFixed(1)} min
+            </p>
+          </div>
+          <div className="space-y-1">
+            <p className={`text-sm ${isAlertTime ? "text-white/80" : "text-muted-foreground"}`}>
+              Speed
+            </p>
+            <p className={`text-2xl font-bold ${isAlertTime ? "text-white" : "text-foreground"}`}>
+              {(speed * 60).toFixed(1)} km/h
             </p>
           </div>
             <div className="space-y-1">

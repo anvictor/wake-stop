@@ -21,6 +21,14 @@ vi.mock("sonner", () => ({
   },
 }));
 
+vi.mock("./useMotionDetection", () => ({
+  useMotionDetection: vi.fn(() => ({
+    isMoving: false,
+    requestPermission: vi.fn(),
+    permissionGranted: true,
+  })),
+}));
+
 describe("useWakeStop", () => {
   beforeEach(() => {
     vi.clearAllMocks();

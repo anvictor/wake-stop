@@ -15,6 +15,9 @@ const Index = () => {
     currentDistance,
     estimatedTimeMinutes,
     intervalAPI,
+    effectiveSpeed,
+    currentTimeDistance,
+    isMoving,
     handleLocationUpdate,
     handleDestinationSet,
     handleAlarmSet,
@@ -65,8 +68,9 @@ const Index = () => {
           isTracking={isTracking}
           destination={destination}
           currentDistance={currentDistance}
-          estimatedTime={estimatedTimeMinutes}
+          estimatedTime={currentTimeDistance} // Use new dynamic time
           alertTime={alertTime}
+          speed={effectiveSpeed} // Pass speed
           onStopTracking={handleStopTracking}
         />
 
@@ -82,7 +86,9 @@ const Index = () => {
         {isTracking && (
           <div className="text-center text-sm text-muted-foreground pt-4 space-y-2">
             <DevInfo
-            intervalAPI={intervalAPI}
+              intervalAPI={intervalAPI}
+              effectiveSpeed={effectiveSpeed}
+              isMoving={isMoving}
              />
           </div>
         )}
