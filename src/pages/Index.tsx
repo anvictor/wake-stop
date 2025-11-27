@@ -5,6 +5,7 @@ import { DestinationInput } from "@/components/DestinationInput";
 import { AlarmSettings } from "@/components/AlarmSettings";
 import { TrackingStatus } from "@/components/TrackingStatus";
 import { useWakeStop } from "@/hooks/useWakeStop";
+import { DevInfo } from "@/components/DevInfo";
 
 const Index = () => {
   const {
@@ -13,12 +14,13 @@ const Index = () => {
     alertTime,
     currentDistance,
     estimatedTimeMinutes,
+    intervalAPI,
     handleLocationUpdate,
     handleDestinationSet,
     handleAlarmSet,
     handleStopTracking,
   } = useWakeStop();
-
+ // New: interval between API requests (seconds)
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-secondary/20">
       <LocationTracker
@@ -74,6 +76,14 @@ const Index = () => {
             <p>🌍 Uses free OpenStreetMap geocoding</p>
             <p>📍 Location checks every 5 minutes</p>
             <p>🔔 Sound & vibration alerts</p>
+          </div>
+        )}
+         {/* Info dev */}
+        {isTracking && (
+          <div className="text-center text-sm text-muted-foreground pt-4 space-y-2">
+            <DevInfo
+            intervalAPI={intervalAPI}
+             />
           </div>
         )}
       </div>
